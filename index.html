@@ -9,7 +9,7 @@
 :root{color-scheme:light;--ink:#182230;--muted:#667085;--line:#e5e7eb;--bg:#f5f7fb;--card:#fff;--accent:#3157c8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{padding:30px max(18px,calc((100% - 1200px)/2));background:#111827;color:white}
-h1{margin:0 0 6px;font-size:clamp(24px,4vw,34px)}header p{margin:0;color:#cbd5e1}
+h1{margin:0 0 6px;font-size:clamp(24px,4vw,34px)}header p{margin:0;color:#cbd5e1}.header-inner{max-width:1200px;margin:auto}.header-actions{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}.share-button{border:0;border-radius:8px;padding:10px 15px;background:#fff;color:#182230;font-weight:750;cursor:pointer}.share-button:hover{background:#e8edff}.share-status{font-size:13px;color:#cbd5e1}
 main{max-width:1200px;margin:24px auto;padding:0 16px}
 .note{color:var(--muted);font-size:13px;margin:0 0 18px}
 .slot{margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -18,7 +18,7 @@ main{max-width:1200px;margin:24px auto;padding:0 16px}
 .track{padding:14px;border-right:1px solid var(--line);min-width:0}.track:last-child{border:0}
 .track-name{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
 .event{padding:10px 0;border-top:1px solid var(--line)}.event:first-of-type{border-top:0}
-.event h3{font-size:14px;line-height:1.45;margin:0 0 4px}.meta{font-size:12px;color:var(--muted)}
+.event h3{font-size:14px;line-height:1.45;margin:0 0 4px}.event.selectable{cursor:pointer;border:1px solid transparent;border-radius:9px;padding:11px;margin:4px 0;transition:background .15s,border-color .15s}.event.selectable:hover{background:#f5f7ff;border-color:#c7d2fe}.event.selectable:focus-visible{outline:3px solid #8095f5;outline-offset:2px}.event.selected{background:#fff1b8;border-color:#e6b422;box-shadow:inset 4px 0 #d69e00}.event.selected:hover{background:#ffedaa}.meta{font-size:12px;color:var(--muted)}
 .tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;background:#eef2f7;color:#475467;margin:0 0 5px}
 .empty{color:#98a2b3;font-size:13px;padding:10px 0}
 .shared{padding:12px 14px;text-align:center;color:#475467;background:#fafafa;font-weight:650}
@@ -28,9 +28,9 @@ a{color:inherit}
 </style>
 </head>
 <body>
-<header><h1>JSConf JP 2026 スケジュール</h1><p>Track A・B・C｜日本語版</p></header>
+<header><div class="header-inner"><h1>JSConf JP 2026 スケジュール</h1><p>Track A・B・C｜日本語版</p><div class="header-actions"><button type="button" class="share-button" id="shareButton">選択内容を共有</button><span class="share-status" id="shareStatus" aria-live="polite">セッションをクリックして選択（各時間帯1つまで）</span></div></div></header>
 <main>
-<p class="note">公式スケジュールをもとに、Track A〜Cの全プログラムを時間順に掲載しています。スマートフォンでは各時間帯のトラックを縦に表示します。Track Dは対象外です。</p>
+<p class="note">セッションをクリックすると選択状態になり、同じ時間帯では1つだけ選べます。選択内容はURLに反映されます。「選択内容を共有」で、そのURLをコピーできます。スマートフォンでは各時間帯のトラックを縦に表示します。</p>
 <div id="schedule"></div>
 </main>
 <footer>出典：<a href="https://jsconf.jp/2026/ja/schedule" target="_blank" rel="noopener">JSConf JP 2026 公式スケジュール</a> · 内容・時刻は公式ページの更新により変更される場合があります。</footer>
@@ -137,11 +137,66 @@ const slots = [
 const names=["Track A","Track B","Track C"];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("schedule");
-root.innerHTML=slots.map(slot=>{
- const shared=slot.shared?'<div class="shared">'+esc(slot.shared)+'</div>':'';
- const tracks=slot.events?'<div class="tracks">'+slot.events.map((e,i)=>'<section class="track"><div class="track-name">'+names[i]+'</div>'+(e?'<article class="event"><span class="tag">'+esc(e[0])+'</span><h3>'+esc(e[1])+'</h3><div class="meta">'+esc(e[2])+(e[3]?' · '+esc(e[3]):'')+'</div></article>':'<div class="empty">—</div>')+'</section>').join('')+'</div>':'';
- return '<section class="slot"><div class="slot-head"><span>'+esc(slot.time)+'</span></div>'+shared+tracks+'</section>';
-}).join("");
+const selected=new Map();
+function readSelection(){
+ selected.clear();
+ const params=new URLSearchParams(location.search);
+ for(const value of params.getAll("s")){
+  const match=value.match(/^(\\d+)-([0-2])$/);
+  if(!match) continue;
+  const slotIndex=Number(match[1]),trackIndex=Number(match[2]);
+  if(slots[slotIndex]?.events?.[trackIndex]) selected.set(slotIndex,trackIndex);
+ }
+}
+function writeSelection(){
+ const url=new URL(location.href);
+ url.searchParams.delete("s");
+ for(const [slotIndex,trackIndex] of selected) url.searchParams.append("s",slotIndex+"-"+trackIndex);
+ history.replaceState(null,"",url);
+}
+function render(){
+ root.innerHTML=slots.map((slot,slotIndex)=>{
+  const shared=slot.shared?'<div class="shared">'+esc(slot.shared)+'</div>':'';
+  const tracks=slot.events?'<div class="tracks">'+slot.events.map((e,trackIndex)=>{
+   const chosen=selected.get(slotIndex)===trackIndex;
+   return '<section class="track"><div class="track-name">'+names[trackIndex]+'</div>'+(e?'<article class="event selectable'+(chosen?' selected':'')+'" role="button" tabindex="0" aria-pressed="'+chosen+'" data-slot="'+slotIndex+'" data-track="'+trackIndex+'"><span class="tag">'+esc(e[0])+'</span><h3>'+esc(e[1])+'</h3><div class="meta">'+esc(e[2])+(e[3]?' · '+esc(e[3]):'')+'</div></article>':'<div class="empty">—</div>')+'</section>';
+  }).join('')+'</div>':'';
+  return '<section class="slot"><div class="slot-head"><span>'+esc(slot.time)+'</span></div>'+shared+tracks+'</section>';
+ }).join('');
+}
+function toggleSelection(slotIndex,trackIndex){
+ if(selected.get(slotIndex)===trackIndex) selected.delete(slotIndex);
+ else selected.set(slotIndex,trackIndex);
+ writeSelection();
+ render();
+ updateStatus();
+}
+function updateStatus(){
+ const count=selected.size;
+ document.getElementById("shareStatus").textContent=count?count+"件のセッションを選択中":"セッションをクリックして選択（各時間帯1つまで）";
+}
+root.addEventListener("click",event=>{
+ const card=event.target.closest(".event.selectable");
+ if(card) toggleSelection(Number(card.dataset.slot),Number(card.dataset.track));
+});
+root.addEventListener("keydown",event=>{
+ const card=event.target.closest(".event.selectable");
+ if(card&&(event.key==="Enter"||event.key===" ")){event.preventDefault();toggleSelection(Number(card.dataset.slot),Number(card.dataset.track));}
+});
+document.getElementById("shareButton").addEventListener("click",async()=>{
+ const url=location.href;
+ const status=document.getElementById("shareStatus");
+ try{
+  await navigator.clipboard.writeText(url);
+  status.textContent="共有URLをコピーしました！";
+ }catch(error){
+  status.textContent="URLをアドレスバーからコピーしてください";
+  window.prompt("共有URL",url);
+ }
+});
+readSelection();
+render();
+updateStatus();
 </script>
 </body>
 </html>
