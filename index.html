@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>JSConf JP 2026 スケジュール（Track A–C）</title>
+<style>
+:root{color-scheme:light;--ink:#182230;--muted:#667085;--line:#e5e7eb;--bg:#f5f7fb;--card:#fff;--accent:#3157c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:30px max(18px,calc((100% - 1200px)/2));background:#111827;color:white}
+h1{margin:0 0 6px;font-size:clamp(24px,4vw,34px)}header p{margin:0;color:#cbd5e1}
+main{max-width:1200px;margin:24px auto;padding:0 16px}
+.note{color:var(--muted);font-size:13px;margin:0 0 18px}
+.slot{margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.slot-head{padding:10px 14px;background:#eef2ff;color:#243b82;font-weight:750;display:flex;justify-content:space-between;gap:12px}
+.tracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.track{padding:14px;border-right:1px solid var(--line);min-width:0}.track:last-child{border:0}
+.track-name{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.event{padding:10px 0;border-top:1px solid var(--line)}.event:first-of-type{border-top:0}
+.event h3{font-size:14px;line-height:1.45;margin:0 0 4px}.meta{font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;background:#eef2f7;color:#475467;margin:0 0 5px}
+.empty{color:#98a2b3;font-size:13px;padding:10px 0}
+.shared{padding:12px 14px;text-align:center;color:#475467;background:#fafafa;font-weight:650}
+footer{max-width:1200px;margin:20px auto 40px;padding:0 16px;color:var(--muted);font-size:13px}
+a{color:inherit}
+@media(max-width:720px){main{margin:16px auto}.tracks{grid-template-columns:1fr}.track{border-right:0;border-bottom:1px solid var(--line);padding:12px 14px}.track:last-child{border-bottom:0}.track-name{margin-bottom:2px}.slot-head{font-size:14px}}
+</style>
+</head>
+<body>
+<header><h1>JSConf JP 2026 スケジュール</h1><p>Track A・B・C｜日本語版</p></header>
+<main>
+<p class="note">公式スケジュールをもとに、Track A〜Cの全プログラムを時間順に掲載しています。スマートフォンでは各時間帯のトラックを縦に表示します。Track Dは対象外です。</p>
+<div id="schedule"></div>
+</main>
+<footer>出典：<a href="https://jsconf.jp/2026/ja/schedule" target="_blank" rel="noopener">JSConf JP 2026 公式スケジュール</a> · 内容・時刻は公式ページの更新により変更される場合があります。</footer>
+<script>
+const slots = [
+{time:"09:00–10:00",shared:"開場"},
+{time:"10:00–10:10",shared:"オープニング／開場説明"},
+{time:"10:10–10:20",events:[
+["LT","AIエージェントによるフロントエンドのパフォーマンス最適化の自動化","Ajay Upreti","English"],
+["LT","ワークフローからハーネスへ — Web フレームワークの作者たちが AI エージェントに向かう理由","azukiazusa","Japanese"],
+["LT","Stage 3でも仕様は変わる。アプリケーション開発者のためのTC39プロセスの読み方","おおいし (bicstone)","Japanese"]]},
+{time:"10:20–10:30",events:[
+["LT","TC39の墓場：JavaScriptを生かすために消えていった提案たち","Nurul Sundarani","English"],
+["LT","フロントエンドのテストカバレッジは 100% 強制がいい","辻佳佑","Japanese"],
+["LT","debug> を待ってもダメだった — Node.jsのflaky testから学ぶ非同期処理の同期点","Yuya Inoue","Japanese"]]},
+{time:"10:30–10:40",events:[
+["LT","あなたの言語をWasmGCなどにコンパイルする","Rikito Taniguchi","English"],
+["LT","JavaScriptはシングルバイナリの夢を見るか","TOMIKAWA Sotaro","Japanese"],
+["LT","Math.sumPreciseから学ぶ、ECMAScript仕様の数値の種類","syumai","Japanese"]]},
+{time:"10:40–10:50",events:[
+["LT","Objectの比較と同一性を考える — ComparisonsからCompositesまで","jiko21","Japanese"],
+["LT","Promiseの向こう側へコンテキストを届ける ― proposal-async-context","Kazuya Serizawa","Japanese"],
+["LT","Canvas 2D Context Next","森内建太 (@petamoriken)","Japanese"]]},
+{time:"10:50–11:00",shared:"休憩"},
+{time:"11:00–11:45",events:[
+["キーノート","Brendan Eich インタビュー — JavaScript生誕30周年の振り返りとこれから","Brendan Eich","English"],null,null]},
+{time:"11:45–11:50",events:[
+["スポンサーLT","AIが作ったLP、ビルド後まで見ていますか？","プロダクト開発部　佐藤 莉帆／ミイダス株式会社","Japanese"],null,null]},
+{time:"11:50–11:55",events:[
+["スポンサーLT","オレ達が戦ってきたOOMの正体の話をしよう","Daisuke Tsuji／AnotherBall Pte Ltd","Japanese"],null,null]},
+{time:"11:55–12:00",events:[
+["スポンサーLT","jsperf の「速い書き方」は今も速いのか測ってみた","ともやん／サイボウズ株式会社","Japanese"],null,null]},
+{time:"12:00–12:05",events:[
+["スポンサーLT","MCD3の開発を5分でのぞいてみる","本間 嗣崇／エムシーディースリー株式会社","Japanese"],null,null]},
+{time:"12:05–13:00",shared:"昼休憩"},
+{time:"13:00–13:30",events:[
+["セッション","HTML-in-Canvas APIで次世代のUIを構築する","Natalia Markoborodova、Thomas Nattestad","English"],
+["セッション","CVEから紐解くJIT Exploit","nolu","Japanese"],
+["セッション","The Cost of the DOM ― jsdom / happy-dom とVitest Browser Modeの実行時間を分解する","ypresto","Japanese"]]},
+{time:"13:30–14:00",events:[
+["セッション","npm installでコンパイルさせない：ネイティブアドオンをなくす","Neeraj Pandey","English"],
+["セッション","V8のArray.prototype.flatを最大約20倍速くするまでと、巨大OSSへの大規模コミットの道のり","Yuta Nishi","Japanese"],
+["セッション","AIがコードを書く時代、JavaScript開発者は何を書くのか？","Aileen Villanueva","English"]]},
+{time:"14:00–14:10",shared:"休憩"},
+{time:"14:10–14:40",events:[
+["セッション","Node.jsの設定に欠けているもの","Marco Ippolito","English"],
+["セッション","AIフレンドリーなGenerative UIをJSXで","うひょ","Japanese"],
+["セッション","Oseo：SBCLスタイルのJavaScript/TypeScript AOTコンパイラ","洪 民憙","Japanese"]]},
+{time:"14:40–15:10",events:[
+["セッション","あなたがやるはずのないJavaScriptのミス10選","Ondřej Žára","English"],
+["セッション","Webメール開発を大幅に変えたJMAPというゲームチェンジャー","Wataru Morita (@tascript)","Japanese"],
+["スポンサーセッション","認証の先にあるAIセキュリティ: プロンプトに頼らない、エージェントの「意図」に基づく動的認可","Daizen Ikehara (@Neri78)／Auth0","Japanese"]]},
+{time:"15:10–15:20",shared:"休憩"},
+{time:"15:20–15:50",events:[
+["セッション","WebMCPとWebAI：ChromeのネイティブAIツールを探る","Kevin Uehara","English"],
+["セッション","ブラウザで変わるID連携 — EVPとFedCMが描く未来の認証","えーじ","Japanese"],
+["セッション","JS･WasmにもあるRustのアレ - コンポーネント間でやりとりするオブジェクトを管理する","山本悠滋","Japanese"]]},
+{time:"15:50–16:20",events:[
+["セッション","React Fiberの内部に迫る：内部スケジューラーがReactを形作る仕組み","Saman Abbasi","English"],
+["セッション","Node.jsで覗くV8バイトコード：3つのJavaScript実験","ローランド リチャード","Japanese"],
+["スポンサーセッション","認証基盤の内製化に伴うフロントエンド開発について","choco／株式会社enechain","Japanese"]]},
+{time:"16:20–16:30",shared:"休憩"},
+{time:"16:30–17:00",events:[
+["セッション","あなたはすでにハッキングされている。まだ気づいていないだけだ。","Itai Satati","English"],
+["セッション","Next.js Instant Navigations - JavaScriptによるWeb Navigationチューニング","akfm_sato","Japanese"],
+["スポンサーセッション","一人フロントエンド。Agentが全コードを書く時代の治安維持戦略","高橋 陽星／NCDC株式会社","Japanese"]]},
+{time:"17:00–17:30",events:[
+["セッション","TanStack Queryの間違った使い方","Neciu Dan","English"],
+["セッション","開発における リズムと一貫性","kinocoboy","Japanese"],
+["スポンサーセッション","クーガー株式会社","クーガー株式会社","Japanese"]]},
+{time:"17:30–18:00",events:[
+["セッション","あなたのNode.jsアプリは嘘をついている：axiosから学んだこと","Jessie","English"],
+["スポンサーセッション","npmパッケージの全量解析から学ぶソフトウェアサプライチェーン攻撃の実態と、開発者・メンテナ観点の守り方","taiga／GMO Flatt Security株式会社","Japanese"],
+["スポンサーセッション","Vercel Functionsの舞台裏","Seiya Nuta／Vercel","Japanese"]]},
+{time:"18:00–18:10",shared:"休憩"},
+{time:"18:10–18:15",events:[
+["スポンサーLT","正しくWeb サイトを守るためのコンテンツセキュリティーポリシー","Hina Nakahira／Arkor","Japanese"],null,null]},
+{time:"18:15–18:20",events:[
+["スポンサーLT","縦書きWebの周辺状況 2026","berlysia／株式会社ドワンゴ","Japanese"],null,null]},
+{time:"18:20–18:25",events:[
+["スポンサーLT","株式会社HelloCloud LT","株式会社HelloCloud","Japanese"],null,null]},
+{time:"18:25–18:30",events:[
+["スポンサーLT","リリースしたで終わらない。観測できるフロントエンド開発","山下賢治／株式会社Linc'well","Japanese"],null,null]},
+{time:"18:30–18:35",events:[
+["スポンサーLT","株式会社マネーフォワード LT","株式会社マネーフォワード","Japanese"],null,null]},
+{time:"18:35–18:40",events:[
+["スポンサーLT","ariaNotify()で届けるAIチャットの当たり前品質","tobi (Kazuhiro Tobita)／株式会社LayerX","Japanese"],null,null]},
+{time:"18:40–18:45",events:[
+["スポンサーLT","Generative UIに学ぶ、リアルタイムに更新されるテーブル基盤のすすめ","中山 晶平 (@nakker1218)／株式会社enechain","Japanese"],null,null]},
+{time:"18:45–18:50",events:[
+["スポンサーLT","フルTypeScript × AI駆動開発で開発量が数倍に。「書く」より「決める」エンジニアへ","茨木 啓太／NCDC株式会社","Japanese"],null,null]},
+{time:"18:50–18:55",events:[
+["スポンサーLT","同僚のレイチェルを紹介します ── 7,000店舗で働くAIのプロダクト開発","平崎 葵／クーガー株式会社","Japanese"],null,null]},
+{time:"18:55–19:00",events:[
+["スポンサーLT","VercelのLT","Vercel","English"],null,null]},
+{time:"19:00–19:05",events:[
+["スポンサーLT","「脆弱性」と「悪性」に同時に立ち向かう、現代のプロダクトセキュリティ","toyojuni／GMO Flatt Security株式会社","Japanese"],null,null]},
+{time:"19:05–19:10",events:[
+["スポンサーLT","AIにスキルシートを書かせる前に、知っておきたいこと。","齋 伶奈／株式会社EVERLANE","Japanese"],null,null]},
+{time:"19:10–19:20",events:[["会場準備","Room A Close（懇親会準備）","", ""],["休憩","","",""],["休憩","","",""]]},
+{time:"19:20–19:50",events:[null,["キーノート","基調講演2：そう、私はハッキングされた——被害から学んだこと","Josh Junon","English"],null]},
+{time:"19:50–21:30",shared:"懇親会"}
+];
+const names=["Track A","Track B","Track C"];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const root=document.getElementById("schedule");
+root.innerHTML=slots.map(slot=>{
+ const shared=slot.shared?'<div class="shared">'+esc(slot.shared)+'</div>':'';
+ const tracks=slot.events?'<div class="tracks">'+slot.events.map((e,i)=>'<section class="track"><div class="track-name">'+names[i]+'</div>'+(e?'<article class="event"><span class="tag">'+esc(e[0])+'</span><h3>'+esc(e[1])+'</h3><div class="meta">'+esc(e[2])+(e[3]?' · '+esc(e[3]):'')+'</div></article>':'<div class="empty">—</div>')+'</section>').join('')+'</div>':'';
+ return '<section class="slot"><div class="slot-head"><span>'+esc(slot.time)+'</span></div>'+shared+tracks+'</section>';
+}).join("");
+</script>
+</body>
+</html>
