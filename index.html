@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#111827">
-<title>JSConf JP 2026 スケジュール（Track A–C）</title>
+<title>JSConf JP 2026 スケジュール（Track A–D）</title>
 <style>
 :root{color-scheme:light;--ink:#182230;--muted:#667085;--line:#e5e7eb;--bg:#f5f7fb;--card:#fff;--accent:#3157c8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -142,7 +142,7 @@ function readSelection(){
  selected.clear();
  const params=new URLSearchParams(location.search);
  for(const value of params.getAll("s")){
-  const match=value.match(/^(\d+)-([0-2])$/);
+  const match=value.match(/^(\d+)-([0-3])$/);
   if(!match) continue;
   const slotIndex=Number(match[1]),trackIndex=Number(match[2]);
   if(slots[slotIndex]?.events?.[trackIndex]) selected.set(slotIndex,trackIndex);
